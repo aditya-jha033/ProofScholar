@@ -156,8 +156,8 @@ To interact with the dApp, you must install the **Lace Wallet** (or Midnight's 1
 
 ### 3. Clone and Install
 ```bash
-git clone https://github.com/DeepSaha25/ScholarShield.git
-cd ScholarShield
+git clone https://github.com/aditya-jha033/ProofScholar.git
+cd ProofScholar
 yarn install
 ```
 
