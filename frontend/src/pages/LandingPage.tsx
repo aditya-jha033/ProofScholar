@@ -120,7 +120,7 @@ export default function LandingPage() {
             </div>
             <div>
               <h3 className="text-lg font-bold mb-xs">3. Blockchain Verification</h3>
-              <p className="text-secondary">The proof is submitted to the Midnight Preprod Network. If valid, the contract marks your address as 'eligible'.</p>
+              <p className="text-secondary">The proof is submitted to the Midnight Preview Network. If valid, the contract marks your address as 'eligible'.</p>
             </div>
           </div>
 

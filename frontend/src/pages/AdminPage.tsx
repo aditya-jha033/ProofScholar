@@ -44,7 +44,7 @@ export default function AdminPage() {
       });
 
       setDeployedAddress(contractAddress);
-      localStorage.setItem('PREPROD_CONTRACT_ADDRESS', contractAddress);
+      localStorage.setItem('PREVIEW_CONTRACT_ADDRESS', contractAddress);
       setStatus('deployed');
       
       setTimeout(() => {
@@ -82,7 +82,7 @@ export default function AdminPage() {
             <Settings size={20} className="mr-sm" /> Deploy Contract
           </h2>
           <p className="text-secondary mb-lg">
-            Deploy the scholarship contract to the Preprod network. The contract will be initialized with the criteria defined in the application config.
+            Deploy the scholarship contract to the Preview network. The contract will be initialized with the criteria defined in the application config.
           </p>
 
           <div className="rules-grid mb-lg">
@@ -98,7 +98,7 @@ export default function AdminPage() {
 
           {status === 'idle' || status === 'error' ? (
             <button className="btn btn-primary btn-block" onClick={handleDeploy}>
-              Deploy Contract to Preprod
+              Deploy Contract to Preview
             </button>
           ) : status === 'deploying' ? (
             <div className="card text-center border-accent" style={{ background: 'rgba(217, 70, 239, 0.05)', borderColor: 'var(--accent-color)' }}>

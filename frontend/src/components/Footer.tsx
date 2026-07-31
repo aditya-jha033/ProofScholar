@@ -45,7 +45,7 @@ export default function Footer() {
           <h4 style={{ color: '#fff', fontWeight: 'bold', marginBottom: '0.5rem' }}>Network Status</h4>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--accent-color)', boxShadow: '0 0 8px var(--accent-color)' }}></span>
-            <span style={{ color: '#888', fontSize: '0.9rem' }}>Preprod Live</span>
+            <span style={{ color: '#888', fontSize: '0.9rem' }}>Preview Live</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
             <span style={{ padding: '0.25rem 0.5rem', backgroundColor: 'rgba(0,255,102,0.1)', color: 'var(--accent-color)', borderRadius: '4px', fontSize: '0.8rem', border: '1px solid rgba(0,255,102,0.2)' }}>

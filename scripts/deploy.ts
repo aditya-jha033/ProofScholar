@@ -90,8 +90,8 @@ async function main() {
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
-    fs.writeFileSync(path.resolve(outputDir, 'preprod-address.txt'), address);
-    logger.info(`Saved address to contracts/managed/preprod-address.txt`);
+    fs.writeFileSync(path.resolve(outputDir, 'preview-address.txt'), address);
+    logger.info(`Saved address to contracts/managed/preview-address.txt`);
   } catch (err: any) {
     logger.error(`Deployment failed: ${err.message || err}`);
   } finally {

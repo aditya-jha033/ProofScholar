@@ -5,7 +5,7 @@ import { Contract } from '../managed/contract/index.js';
 import { useWallet } from '../contexts/WalletContext';
 import PrivacyFlowViz from '../components/PrivacyFlowViz';
 import { CheckCircle, XCircle, AlertCircle, Loader2, ExternalLink } from 'lucide-react';
-import { PREPROD_CONTRACT_ADDRESS, MIN_GPA_THRESHOLD, MAX_INCOME_THRESHOLD } from '../config';
+import { PREVIEW_CONTRACT_ADDRESS, MIN_GPA_THRESHOLD, MAX_INCOME_THRESHOLD } from '../config';
 
 type VerifyStatus = 'idle' | 'proving' | 'submitting' | 'eligible' | 'ineligible' | 'error';
 
@@ -53,7 +53,7 @@ export default function VerifyPage() {
 
       const callTxData = await createUnprovenCallTx(session.providers as any, {
         compiledContract,
-        contractAddress: PREPROD_CONTRACT_ADDRESS,
+        contractAddress: PREVIEW_CONTRACT_ADDRESS,
         circuitId: 'verify_eligibility',
         args: [gpaScaled, incomeBig],
       });
@@ -97,14 +97,14 @@ export default function VerifyPage() {
           <LockCircleIcon />
           <h2 className="title-md">Connect Wallet</h2>
           <p className="text-secondary mb-lg">
-            You must connect your 1AM or Lace wallet on the Preprod network to verify your eligibility.
+            You must connect your 1AM or Lace wallet on the Preview network to verify your eligibility.
           </p>
         </div>
       </div>
     );
   }
 
-  if (PREPROD_CONTRACT_ADDRESS === 'UPDATE_WITH_YOUR_PREPROD_CONTRACT_ADDRESS') {
+  if (PREVIEW_CONTRACT_ADDRESS === 'UPDATE_WITH_YOUR_PREPROD_CONTRACT_ADDRESS') {
     return (
       <div className="page-container flex-center">
         <div className="card text-center max-w-md mx-auto">
@@ -196,7 +196,7 @@ export default function VerifyPage() {
           ) : isProcessing ? (
             <button className="btn btn-primary btn-block" disabled>
               <Loader2 className="spinner-icon mr-sm" size={18} />
-              {status === 'proving' ? 'Generating ZK Proof Locally…' : 'Submitting Proof to Preprod…'}
+              {status === 'proving' ? 'Generating ZK Proof Locally…' : 'Submitting Proof to Preview…'}
             </button>
           ) : (
             <button className="btn btn-secondary btn-block" onClick={reset}>
@@ -211,7 +211,7 @@ export default function VerifyPage() {
               <div className="result-desc mb-sm">Your ZK proof was verified on-chain. Your data remained private.</div>
               {txId && (
                 <a 
-                  href={`https://explorer.1am.xyz/tx/${txId}?network=preprod`}
+                  href={`https://explorer.1am.xyz/tx/${txId}?network=preview`}
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="btn btn-secondary inline-flex items-center gap-xs mt-sm"
@@ -230,7 +230,7 @@ export default function VerifyPage() {
               <div className="result-desc mb-sm">Your credentials do not satisfy the thresholds. Data remained private.</div>
               {txId && (
                 <a 
-                  href={`https://explorer.1am.xyz/tx/${txId}?network=preprod`}
+                  href={`https://explorer.1am.xyz/tx/${txId}?network=preview`}
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="btn btn-secondary inline-flex items-center gap-xs mt-sm"
