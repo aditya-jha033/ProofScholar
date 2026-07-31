@@ -60,7 +60,7 @@ The core value proposition of ScholarShield is absolute data privacy for applica
 The Compact contract (`scholarship.compact`) is designed for maximum security and data minimization. The constructor sets the minimum GPA and maximum income requirements as public state. The `verify_eligibility` circuit acts as the gatekeeper, asserting the local private witness values against the public state without disclosing them.
 
 ### Deployment
-The contract has been successfully deployed and verified on the Midnight Preprod Network.
+The contract has been successfully deployed and verified on the Midnight Preview Network.
 
 [Contract b54ec82c83b0ab08aaba7abdede0b9a8eb0e4dbff76413843cb345e4429733d5 | 1AM Explorer](https://explorer.1am.xyz/contract/b54ec82c83b0ab08aaba7abdede0b9a8eb0e4dbff76413843cb345e4429733d5)
 <br/><br/>
@@ -80,7 +80,7 @@ graph TD;
         C -->|Generates ZK Proof| C
     end
     
-    subgraph Blockchain [Midnight Blockchain Preprod]
+    subgraph Blockchain [Midnight Blockchain Preview]
         C -->|Submits Proof TX| D[Midnight Node validators]
         D -->|Verifies Math against Public State| E[Scholarship Smart Contract]
         E -->|Updates Eligible Status| F[Public Ledger]
@@ -96,16 +96,16 @@ sequenceDiagram
     participant Student
     participant ScholarShield UI
     participant Lace Wallet (Local)
-    participant Midnight Preprod Ledger
+    participant Midnight Preview Ledger
 
     Student->>ScholarShield UI: Opens App & Connects Wallet
     ScholarShield UI->>Student: Prompts for GPA & Income
     Student->>ScholarShield UI: Enters 3.8 GPA & $40,000 Income
     ScholarShield UI->>Lace Wallet: Sends Data as Private Witness
     Lace Wallet->>Lace Wallet: Generates ZK Proof locally
-    Lace Wallet->>Midnight Preprod Ledger: Submits Cryptographic Proof
-    Midnight Preprod Ledger->>Midnight Preprod Ledger: Verifies Proof against thresholds
-    Midnight Preprod Ledger-->>ScholarShield UI: Returns Success Status
+    Lace Wallet->>Midnight Preview Ledger: Submits Cryptographic Proof
+    Midnight Preview Ledger->>Midnight Preview Ledger: Verifies Proof against thresholds
+    Midnight Preview Ledger-->>ScholarShield UI: Returns Success Status
     ScholarShield UI-->>Student: Displays "Eligibility Verified!"
 ```
 
@@ -152,7 +152,7 @@ The project includes automated tests verifying both successful proofs (when cond
 - Node.js (v22.0.0+) and Yarn.
 
 ### 2. Wallet Setup
-To interact with the dApp, you must install the **Lace Wallet** (or Midnight's 1AM wallet) browser extension. Ensure the extension is set to the **Midnight Preprod** network or **Local** network depending on your environment.
+To interact with the dApp, you must install the **Lace Wallet** (or Midnight's 1AM wallet) browser extension. Ensure the extension is set to the **Midnight Preview** network or **Local** network depending on your environment.
 
 ### 3. Clone and Install
 ```bash
