@@ -1,7 +1,5 @@
-import React from 'react';
-import { Shield, BookOpen, Code, Terminal } from 'lucide-react';
+import { BookOpen, Code } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 
 export default function AboutPage() {
   return (
