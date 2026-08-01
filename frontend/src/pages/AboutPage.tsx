@@ -7,7 +7,7 @@ export default function AboutPage() {
   return (
     <div className="container px-4 py-16 max-w-3xl mx-auto">
       <div className="text-center mb-16">
-        <Shield className="h-16 w-16 text-primary mx-auto mb-6" />
+        <img src="/logo.png" alt="ProofScholar Logo" className="h-24 w-24 mx-auto mb-6 object-contain drop-shadow-md" />
         <h1 className="text-4xl font-extrabold tracking-tight mb-4">About ProofScholar</h1>
         <p className="text-xl text-muted-foreground">
           Privacy-preserving eligibility verification built on the Midnight Network.
