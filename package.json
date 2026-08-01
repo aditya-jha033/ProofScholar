@@ -8,17 +8,9 @@
   },
   "scripts": {
     "compile": "compact compile contracts/scholarship.compact contracts/managed/scholarship",
-    "test": "cross-env NODE_OPTIONS='--experimental-vm-modules' vitest run",
-    "test:local": "cross-env MIDNIGHT_NETWORK=local yarn test",
-    "test:preview": "cross-env MIDNIGHT_NETWORK=preview yarn test",
-    "test:preprod": "cross-env MIDNIGHT_NETWORK=preprod yarn test",
-    "deploy:preprod": "MIDNIGHT_NETWORK=preprod vite-node scripts/deploy.ts",
-    "env:up": "docker compose up -d --wait",
-    "env:down": "docker compose down",
-    "proof:up": "docker compose up -d --wait proof-server",
-    "proof:down": "docker compose stop proof-server",
-    "wait:dust": "vite-node scripts/wait-for-dust.ts",
-    "validate": "yarn env:up && yarn test:local; yarn env:down"
+    "test": "vitest run",
+    "test:local": "vitest run",
+    "validate": "yarn test"
   },
   "dependencies": {
     "@midnight-ntwrk/midnight-js-contracts": "4.1.1",
