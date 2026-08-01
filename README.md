@@ -1,8 +1,8 @@
 <div align="center">
   <!-- LOGO IMAGE -->
-  <img src="./frontend/public/logo.png" alt="ScholarShield Logo" width="150" height="150" />
+  <img src="./frontend/public/logo.png" alt="ProofScholar Logo" width="150" height="150" />
 
-  <h1>ScholarShield 🛡️</h1>
+  <h1>ProofScholar 🛡️</h1>
   <p><strong>Privacy-Preserving Scholarship Verification on the Midnight Network</strong></p>
 
   <!-- TECH STACK BANNERS -->
@@ -29,13 +29,13 @@
 In legacy systems, students are forced to upload highly sensitive unencrypted documents (such as tax returns, university transcripts, and national IDs) to centralized databases. These databases are prime targets for data breaches, putting applicants at severe risk for identity theft. 
 
 ### The Solution
-ScholarShield serves as a Zero-Knowledge (ZK) eligibility gate for academic scholarships. It eliminates the need for data transmission entirely. Verification is completely mathematical. Students can cryptographically prove they meet stringent academic and financial requirements (such as minimum GPA and maximum family income) without ever exposing their raw, sensitive data to centralized portals, scholarship boards, or the public blockchain ledger.
+ProofScholar serves as a Zero-Knowledge (ZK) eligibility gate for academic scholarships. It eliminates the need for data transmission entirely. Verification is completely mathematical. Students can cryptographically prove they meet stringent academic and financial requirements (such as minimum GPA and maximum family income) without ever exposing their raw, sensitive data to centralized portals, scholarship boards, or the public blockchain ledger.
 
 ---
 
 ## 🔒 Privacy Model: Public State vs. Private Witness
 
-The core value proposition of ScholarShield is absolute data privacy for applicants. We utilize a **Privacy-First Model** through Midnight's Zero-Knowledge proofs:
+The core value proposition of ProofScholar is absolute data privacy for applicants. We utilize a **Privacy-First Model** through Midnight's Zero-Knowledge proofs:
 
 1. **Public State (Ledger Data):** The scholarship board publishes the eligibility thresholds (`min_gpa` and `max_income`) to the public Midnight ledger. These values are fully transparent and verifiable by any observer.
 2. **Private Witness (User Data):** The student inputs their actual GPA and family income locally into their browser. These values are designated as "private witnesses" in the Compact circuit.
@@ -94,19 +94,19 @@ graph TD;
 ```mermaid
 sequenceDiagram
     participant Student
-    participant ScholarShield UI
+    participant ProofScholar UI
     participant Lace Wallet (Local)
     participant Midnight Preview Ledger
 
-    Student->>ScholarShield UI: Opens App & Connects Wallet
-    ScholarShield UI->>Student: Prompts for GPA & Income
-    Student->>ScholarShield UI: Enters 3.8 GPA & $40,000 Income
-    ScholarShield UI->>Lace Wallet: Sends Data as Private Witness
+    Student->>ProofScholar UI: Opens App & Connects Wallet
+    ProofScholar UI->>Student: Prompts for GPA & Income
+    Student->>ProofScholar UI: Enters 3.8 GPA & $40,000 Income
+    ProofScholar UI->>Lace Wallet: Sends Data as Private Witness
     Lace Wallet->>Lace Wallet: Generates ZK Proof locally
     Lace Wallet->>Midnight Preview Ledger: Submits Cryptographic Proof
     Midnight Preview Ledger->>Midnight Preview Ledger: Verifies Proof against thresholds
-    Midnight Preview Ledger-->>ScholarShield UI: Returns Success Status
-    ScholarShield UI-->>Student: Displays "Eligibility Verified!"
+    Midnight Preview Ledger-->>ProofScholar UI: Returns Success Status
+    ProofScholar UI-->>Student: Displays "Eligibility Verified!"
 ```
 
 ---
@@ -178,7 +178,7 @@ Navigate to `http://localhost:5173` to view the application.
 
 ## 🔮 Future Implementation & Real-World Application
 
-While ScholarShield currently serves as a proof-of-concept for academic scholarships, the underlying architecture has vast real-world applications:
+While ProofScholar currently serves as a proof-of-concept for academic scholarships, the underlying architecture has vast real-world applications:
 
 1. **Mortgage & Loan Approval:** Proving an applicant meets income and credit score thresholds without the bank ever storing their exact financial records.
 2. **Age Verification:** Allowing users to access restricted digital content by proving they are over 18 or 21 without providing a copy of their driver's license.
