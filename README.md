@@ -19,7 +19,7 @@
 ## 🚀 Live Links
 
 - **Live Application (Vercel):** [https://proofscholar-midnight.vercel.app/](https://proofscholar-midnight.vercel.app/)
-- **Demo Video Presentation:** [Watch on YouTube](https://www.youtube.com/watch?v=dQw4w9WgXcQ) <!-- Update with your actual YouTube link later -->
+- **Demo Video Presentation:** [Watch on YouTube](https://youtu.be/as1p8tce0jU) <!-- Update with your actual YouTube link later -->
 
 ---
 
