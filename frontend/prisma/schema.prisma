@@ -11,6 +11,8 @@ model ContractConfig {
   id        String   @id @default(cuid())
   network   String   @unique // e.g. "preview"
   address   String   
+  minGpa    Float?
+  maxIncome Int?
   updatedAt DateTime @updatedAt
 }
 
