@@ -28,13 +28,19 @@ export default function VerifyPage() {
   const [txId, setTxId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [contractAddress, setContractAddress] = useState<string | null>(null);
+  const [minGpa, setMinGpa] = useState<number>(MIN_GPA_THRESHOLD / 100);
+  const [maxIncome, setMaxIncome] = useState<number>(MAX_INCOME_THRESHOLD);
 
   // Fetch config and verification cache
   React.useEffect(() => {
     fetch('/api/config')
       .then(res => res.json())
       .then(data => {
-        if (data.address) setContractAddress(data.address);
+        if (data.address) {
+          setContractAddress(data.address);
+          if (data.minGpa !== undefined && data.minGpa !== null) setMinGpa(data.minGpa);
+          if (data.maxIncome !== undefined && data.maxIncome !== null) setMaxIncome(data.maxIncome);
+        }
         else setContractAddress(FALLBACK_CONTRACT_ADDRESS);
       })
       .catch(() => setContractAddress(FALLBACK_CONTRACT_ADDRESS));
@@ -95,7 +101,7 @@ export default function VerifyPage() {
 
       setTxId(typeof id === 'string' ? id : id?.txHash ?? 'confirmed');
 
-      const passes = gpaScaled >= BigInt(MIN_GPA_THRESHOLD) && incomeBig <= BigInt(MAX_INCOME_THRESHOLD);
+      const passes = gpaScaled >= BigInt(Math.round(minGpa * 100)) && incomeBig <= BigInt(maxIncome);
       const newStatus = passes ? 'eligible' : 'ineligible';
       setStatus(newStatus);
       
@@ -144,7 +150,8 @@ export default function VerifyPage() {
     );
   }
 
-  if ((contractAddress || FALLBACK_CONTRACT_ADDRESS) === 'UPDATE_WITH_YOUR_PREPROD_CONTRACT_ADDRESS') {
+  const activeContract = contractAddress || FALLBACK_CONTRACT_ADDRESS;
+  if (!activeContract || activeContract === 'UPDATE_WITH_YOUR_PREPROD_CONTRACT_ADDRESS') {
     return (
       <div className="container px-4 py-24 flex items-center justify-center min-h-[60vh]">
         <Card className="w-full max-w-md text-center py-12 border-destructive">
@@ -152,7 +159,7 @@ export default function VerifyPage() {
             <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
             <CardTitle className="text-2xl">Contract Not Deployed</CardTitle>
             <CardDescription>
-              Please ask an administrator to deploy the contract via the Admin portal first.
+              No contract address was found in the database. Please visit the Admin portal to deploy the contract first.
             </CardDescription>
           </CardHeader>
         </Card>
@@ -174,11 +181,11 @@ export default function VerifyPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 p-4 bg-secondary/50 rounded-lg border">
             <div>
               <div className="text-sm font-medium text-muted-foreground mb-1">Min GPA (Public)</div>
-              <div className="text-xl font-bold">≥ 8.00</div>
+              <div className="text-xl font-bold">≥ {minGpa.toFixed(2)}</div>
             </div>
             <div>
               <div className="text-sm font-medium text-muted-foreground mb-1">Max Income (Public)</div>
-              <div className="text-xl font-bold">≤ ₹2,50,000</div>
+              <div className="text-xl font-bold">≤ ₹{maxIncome.toLocaleString()}</div>
             </div>
           </div>
 

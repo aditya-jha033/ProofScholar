@@ -8,6 +8,8 @@ import { Settings, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { MIN_GPA_THRESHOLD, MAX_INCOME_THRESHOLD } from '../config';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 function getCompiledContract() {
   return CompiledContract.make('ScholarshipContract', Contract).pipe(
@@ -21,19 +23,34 @@ export default function AdminPage() {
   const [status, setStatus] = useState<'idle' | 'deploying' | 'deployed' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [deployedAddress, setDeployedAddress] = useState<string | null>(null);
+  
+  const [minGpaInput, setMinGpaInput] = useState<string>((MIN_GPA_THRESHOLD / 100).toFixed(2));
+  const [maxIncomeInput, setMaxIncomeInput] = useState<string>(MAX_INCOME_THRESHOLD.toString());
 
   const handleDeploy = useCallback(async () => {
     if (!session || !isConnected) return;
     setStatus('deploying');
     setErrorMsg(null);
+    
+    const minGpaVal = parseFloat(minGpaInput);
+    const maxIncomeVal = parseInt(maxIncomeInput, 10);
+    
+    if (isNaN(minGpaVal) || isNaN(maxIncomeVal)) {
+      setErrorMsg('Invalid input values');
+      setStatus('error');
+      return;
+    }
 
     try {
       const compiledContract = getCompiledContract();
       const initialPrivateState = {};
+      
+      const gpaScaled = BigInt(Math.round(minGpaVal * 100));
+      const incomeScaled = BigInt(maxIncomeVal);
 
       const deployTxData = await createUnprovenDeployTx(session.providers as any, {
         compiledContract,
-        args: [BigInt(MIN_GPA_THRESHOLD), BigInt(MAX_INCOME_THRESHOLD)],
+        args: [gpaScaled, incomeScaled],
         privateStateId: 'DeployerState',
         initialPrivateState,
         signingKey: sampleSigningKey(),
@@ -53,10 +70,14 @@ export default function AdminPage() {
         await fetch('/api/config', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ address: contractAddress })
+          body: JSON.stringify({ 
+            address: contractAddress,
+            minGpa: minGpaVal,
+            maxIncome: maxIncomeVal
+          })
         });
       } catch (e) {
-        console.error('Failed to cache address in backend', e);
+        console.error('Failed to cache config in backend', e);
       }
 
       setStatus('deployed');
@@ -69,7 +90,7 @@ export default function AdminPage() {
       setStatus('error');
       setErrorMsg(e?.message ?? String(e));
     }
-  }, [session, isConnected]);
+  }, [session, isConnected, minGpaInput, maxIncomeInput]);
 
   if (!isConnected) {
     return (
@@ -100,18 +121,32 @@ export default function AdminPage() {
             <Settings className="h-5 w-5" /> Deploy Contract
           </CardTitle>
           <CardDescription>
-            Deploy the scholarship contract to the Preview network. The contract will be initialized with the criteria defined in the application config.
+            Deploy the scholarship contract to the Preview network. Set the minimum GPA and maximum income criteria.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 p-4 bg-secondary/50 rounded-lg border">
-            <div>
-              <div className="text-sm font-medium text-muted-foreground mb-1">Initial GPA Threshold</div>
-              <div className="text-xl font-bold">8.00</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+            <div className="space-y-2">
+              <Label htmlFor="minGpa">Minimum GPA Threshold</Label>
+              <Input 
+                id="minGpa" 
+                type="number" 
+                step="0.1" 
+                value={minGpaInput} 
+                onChange={(e) => setMinGpaInput(e.target.value)} 
+                disabled={status !== 'idle' && status !== 'error'}
+              />
             </div>
-            <div>
-              <div className="text-sm font-medium text-muted-foreground mb-1">Initial Income Threshold</div>
-              <div className="text-xl font-bold">₹2,50,000</div>
+            <div className="space-y-2">
+              <Label htmlFor="maxIncome">Maximum Income (₹)</Label>
+              <Input 
+                id="maxIncome" 
+                type="number" 
+                step="1000" 
+                value={maxIncomeInput} 
+                onChange={(e) => setMaxIncomeInput(e.target.value)}
+                disabled={status !== 'idle' && status !== 'error'}
+              />
             </div>
           </div>
 

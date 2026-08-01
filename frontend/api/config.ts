@@ -6,9 +6,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
       // 1. Try Cache
       try {
-        const cachedAddress = await redis.get<string>('contract_address_preview');
-        if (cachedAddress) {
-          return res.status(200).json({ address: cachedAddress, source: 'cache' });
+        const cachedData = await redis.get<any>('contract_address_preview');
+        if (cachedData && cachedData.address) {
+          return res.status(200).json({ address: cachedData.address, minGpa: cachedData.minGpa, maxIncome: cachedData.maxIncome, source: 'cache' });
         }
       } catch(e) {
         console.warn('Redis Cache Miss/Error:', e);
@@ -22,9 +22,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (config) {
         // Cache it for 1 hour
         try {
-          await redis.setex('contract_address_preview', 3600, config.address);
+          await redis.setex('contract_address_preview', 3600, { address: config.address, minGpa: config.minGpa, maxIncome: config.maxIncome });
         } catch(e) {}
-        return res.status(200).json({ address: config.address, source: 'db' });
+        return res.status(200).json({ address: config.address, minGpa: config.minGpa, maxIncome: config.maxIncome, source: 'db' });
       }
 
       return res.status(404).json({ error: 'Contract address not found' });
@@ -35,7 +35,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (req.method === 'POST') {
-    const { address } = req.body;
+    const { address, minGpa, maxIncome } = req.body;
     if (!address) {
       return res.status(400).json({ error: 'Address is required' });
     }
@@ -44,13 +44,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // Update DB
       const config = await prisma.contractConfig.upsert({
         where: { network: 'preview' },
-        update: { address },
-        create: { network: 'preview', address },
+        update: { address, minGpa, maxIncome },
+        create: { network: 'preview', address, minGpa, maxIncome },
       });
 
       // Invalidate / Update Cache
       try {
-        await redis.set('contract_address_preview', address);
+        await redis.set('contract_address_preview', { address, minGpa, maxIncome });
       } catch(e) {}
 
       return res.status(200).json({ success: true, config });

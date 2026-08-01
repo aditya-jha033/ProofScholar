@@ -52,28 +52,7 @@ export default function AboutPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-2xl">
-              <Terminal className="h-6 w-6 text-primary" /> Open Source
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground leading-relaxed mb-6">
-              This project was built for the <strong className="text-foreground">Midnight New Moon to Full Hackathon</strong>. 
-              The smart contract is written in Compact, and the frontend uses React and the Midnight.js SDK.
-            </p>
-            <Button variant="secondary" asChild>
-              <a 
-                href="https://github.com/DeepSaha25/ProofScholar" 
-                target="_blank" 
-                rel="noreferrer" 
-              >
-                View Source Code on GitHub
-              </a>
-            </Button>
-          </CardContent>
-        </Card>
+
       </div>
     </div>
   );
