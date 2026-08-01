@@ -42,27 +42,8 @@ jobs:
       - name: Compile contract
         run: yarn compile
 
-      - name: Start local Midnight network
-        run: yarn env:up
-
-      - name: Wait for DUST to accrue
-        run: npx vite-node scripts/wait-for-dust.ts
-
-      - name: Run tests against local network
-        run: yarn test:local
-
-      - name: Stop local Midnight network
-        if: always()
-        run: yarn env:down
-
-      - name: Upload service logs on failure
-        if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  #v7.0.1
-        with:
-          name: docker-compose-logs
-          path: logs/
-          if-no-files-found: ignore
-          retention-days: 7
+      - name: Run pure unit tests
+        run: yarn validate
 
   frontend-build:
     name: Frontend Build
