@@ -4,8 +4,12 @@ import { createUnprovenCallTx, submitTxAsync } from '@midnight-ntwrk/midnight-js
 import { Contract } from '../managed/contract/index.js';
 import { useWallet } from '../contexts/WalletContext';
 import PrivacyFlowViz from '../components/PrivacyFlowViz';
-import { CheckCircle, XCircle, AlertCircle, Loader2, ExternalLink } from 'lucide-react';
-import { PREVIEW_CONTRACT_ADDRESS, MIN_GPA_THRESHOLD, MAX_INCOME_THRESHOLD } from '../config';
+import { CheckCircle, XCircle, AlertCircle, Loader2, ExternalLink, Lock } from 'lucide-react';
+import { FALLBACK_CONTRACT_ADDRESS, MIN_GPA_THRESHOLD, MAX_INCOME_THRESHOLD } from '../config';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 type VerifyStatus = 'idle' | 'proving' | 'submitting' | 'eligible' | 'ineligible' | 'error';
 
@@ -17,12 +21,36 @@ function getCompiledContract() {
 }
 
 export default function VerifyPage() {
-  const { session, isConnected, walletStatus } = useWallet();
+  const { session, isConnected } = useWallet();
   const [gpaRaw, setGpaRaw] = useState('');
   const [incomeRaw, setIncomeRaw] = useState('');
   const [status, setStatus] = useState<VerifyStatus>('idle');
   const [txId, setTxId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [contractAddress, setContractAddress] = useState<string | null>(null);
+
+  // Fetch config and verification cache
+  React.useEffect(() => {
+    fetch('/api/config')
+      .then(res => res.json())
+      .then(data => {
+        if (data.address) setContractAddress(data.address);
+        else setContractAddress(FALLBACK_CONTRACT_ADDRESS);
+      })
+      .catch(() => setContractAddress(FALLBACK_CONTRACT_ADDRESS));
+
+    if (session?.unshieldedAddress) {
+      fetch(`/api/verification?address=${session.unshieldedAddress}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.data?.status === 'eligible' || data.data?.status === 'ineligible') {
+            setStatus(data.data.status);
+            setTxId(data.data.txId);
+          }
+        })
+        .catch(console.error);
+    }
+  }, [session?.unshieldedAddress]);
 
   const handleVerify = useCallback(async () => {
     if (!session || !isConnected) return;
@@ -35,8 +63,8 @@ export default function VerifyPage() {
       setStatus('error');
       return;
     }
-    if (isNaN(incomeValue) || incomeValue < 0) {
-      setErrorMsg('Please enter a valid annual income in INR');
+    if (isNaN(incomeValue) || incomeValue < 0 || incomeValue > 4294967295) {
+      setErrorMsg('Please enter a valid annual income in INR (Max: 4,294,967,295)');
       setStatus('error');
       return;
     }
@@ -53,7 +81,7 @@ export default function VerifyPage() {
 
       const callTxData = await createUnprovenCallTx(session.providers as any, {
         compiledContract,
-        contractAddress: PREVIEW_CONTRACT_ADDRESS,
+        contractAddress: contractAddress || FALLBACK_CONTRACT_ADDRESS,
         circuitId: 'verify_eligibility',
         args: [gpaScaled, incomeBig],
       });
@@ -68,7 +96,15 @@ export default function VerifyPage() {
       setTxId(typeof id === 'string' ? id : id?.txHash ?? 'confirmed');
 
       const passes = gpaScaled >= BigInt(MIN_GPA_THRESHOLD) && incomeBig <= BigInt(MAX_INCOME_THRESHOLD);
-      setStatus(passes ? 'eligible' : 'ineligible');
+      const newStatus = passes ? 'eligible' : 'ineligible';
+      setStatus(newStatus);
+      
+      // Update Cache via API
+      fetch(`/api/verification?address=${session.unshieldedAddress}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus, txId: typeof id === 'string' ? id : id?.txHash ?? 'confirmed' })
+      }).catch(console.error);
     } catch (e: any) {
       const msg: string = e?.message ?? String(e);
       if (msg.includes('GPA too low') || msg.includes('Income too high') || msg.toLowerCase().includes('assert')) {
@@ -92,61 +128,66 @@ export default function VerifyPage() {
 
   if (!isConnected) {
     return (
-      <div className="page-container flex-center">
-        <div className="card text-center max-w-md mx-auto">
-          <LockCircleIcon />
-          <h2 className="title-md">Connect Wallet</h2>
-          <p className="text-secondary mb-lg">
-            You must connect your 1AM or Lace wallet on the Preview network to verify your eligibility.
-          </p>
-        </div>
+      <div className="container px-4 py-24 flex items-center justify-center min-h-[60vh]">
+        <Card className="w-full max-w-md text-center py-12">
+          <CardHeader>
+            <div className="mx-auto bg-secondary p-4 rounded-full mb-4">
+              <Lock className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <CardTitle className="text-2xl">Connect Wallet</CardTitle>
+            <CardDescription>
+              You must connect your 1AM or Lace wallet on the Preview network to verify your eligibility.
+            </CardDescription>
+          </CardHeader>
+        </Card>
       </div>
     );
   }
 
-  if (PREVIEW_CONTRACT_ADDRESS === 'UPDATE_WITH_YOUR_PREPROD_CONTRACT_ADDRESS') {
+  if ((contractAddress || FALLBACK_CONTRACT_ADDRESS) === 'UPDATE_WITH_YOUR_PREPROD_CONTRACT_ADDRESS') {
     return (
-      <div className="page-container flex-center">
-        <div className="card text-center max-w-md mx-auto">
-          <AlertCircle size={48} className="text-warning mx-auto mb-md" />
-          <h2 className="title-md">Contract Not Deployed</h2>
-          <p className="text-secondary mb-lg">
-            Please ask an administrator to deploy the contract via the Admin portal first.
-          </p>
-        </div>
+      <div className="container px-4 py-24 flex items-center justify-center min-h-[60vh]">
+        <Card className="w-full max-w-md text-center py-12 border-destructive">
+          <CardHeader>
+            <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+            <CardTitle className="text-2xl">Contract Not Deployed</CardTitle>
+            <CardDescription>
+              Please ask an administrator to deploy the contract via the Admin portal first.
+            </CardDescription>
+          </CardHeader>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="page-container">
-      <div className="max-w-3xl mx-auto">
-        <div className="mb-xl">
-          <h1 className="title-lg mb-sm">Verify Eligibility</h1>
-          <p className="text-secondary">Provide your private credentials below to generate a zero-knowledge proof.</p>
-        </div>
+    <div className="container px-4 py-12 max-w-3xl mx-auto">
+      <div className="mb-8 text-center md:text-left">
+        <h1 className="text-3xl font-bold tracking-tight mb-2">Verify Eligibility</h1>
+        <p className="text-muted-foreground">Provide your private credentials below to generate a zero-knowledge proof.</p>
+      </div>
 
-        <PrivacyFlowViz status={status} />
+      <PrivacyFlowViz status={status} />
 
-        <div className="card">
-          <div className="rules-grid mb-lg">
-            <div className="rule-box">
-              <div className="rule-label">Min GPA (Public)</div>
-              <div className="rule-value">≥ 8.00</div>
+      <Card className="mt-8">
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 p-4 bg-secondary/50 rounded-lg border">
+            <div>
+              <div className="text-sm font-medium text-muted-foreground mb-1">Min GPA (Public)</div>
+              <div className="text-xl font-bold">≥ 8.00</div>
             </div>
-            <div className="rule-box">
-              <div className="rule-label">Max Income (Public)</div>
-              <div className="rule-value">≤ ₹2,50,000</div>
+            <div>
+              <div className="text-sm font-medium text-muted-foreground mb-1">Max Income (Public)</div>
+              <div className="text-xl font-bold">≤ ₹2,50,000</div>
             </div>
           </div>
 
-          <div className="form-grid mb-lg">
-            <div className="input-group">
-              <label htmlFor="input-gpa">Your GPA</label>
-              <input
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="space-y-2">
+              <Label htmlFor="input-gpa">Your GPA</Label>
+              <Input
                 id="input-gpa"
                 type="number"
-                className="input-field"
                 placeholder="e.g. 9.1"
                 min="0"
                 max="10"
@@ -155,14 +196,13 @@ export default function VerifyPage() {
                 onChange={(e) => setGpaRaw(e.target.value)}
                 disabled={isProcessing || status === 'eligible' || status === 'ineligible'}
               />
-              <div className="text-secondary mt-xs" style={{ fontSize: '0.8rem' }}>Enter a value between 0.0 and 10.0</div>
+              <p className="text-xs text-muted-foreground">Enter a value between 0.0 and 10.0</p>
             </div>
-            <div className="input-group">
-              <label htmlFor="input-income">Annual Family Income (₹)</label>
-              <input
+            <div className="space-y-2">
+              <Label htmlFor="input-income">Annual Family Income (₹)</Label>
+              <Input
                 id="input-income"
                 type="number"
-                className="input-field"
                 placeholder="e.g. 180000"
                 min="0"
                 step="1000"
@@ -170,95 +210,77 @@ export default function VerifyPage() {
                 onChange={(e) => setIncomeRaw(e.target.value)}
                 disabled={isProcessing || status === 'eligible' || status === 'ineligible'}
               />
-              <div className="text-secondary mt-xs" style={{ fontSize: '0.8rem' }}>Enter total income in INR</div>
+              <p className="text-xs text-muted-foreground">Enter total income in INR</p>
             </div>
           </div>
 
           {status === 'idle' || status === 'error' ? (
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <button
-                className="btn btn-primary"
-                style={{ flex: 2 }}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button 
+                className="flex-1" 
                 onClick={handleVerify}
                 disabled={!gpaRaw || !incomeRaw || !isConnected}
               >
                 Verify Eligibility
-              </button>
-              <button
-                className="btn btn-secondary"
-                style={{ flex: 1 }}
+              </Button>
+              <Button 
+                variant="outline" 
                 onClick={reset}
                 disabled={!gpaRaw && !incomeRaw && !errorMsg}
               >
                 Clear
-              </button>
+              </Button>
             </div>
           ) : isProcessing ? (
-            <button className="btn btn-primary btn-block" disabled>
-              <Loader2 className="spinner-icon mr-sm" size={18} />
+            <Button className="w-full" disabled>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               {status === 'proving' ? 'Generating ZK Proof Locally…' : 'Submitting Proof to Preview…'}
-            </button>
+            </Button>
           ) : (
-            <button className="btn btn-secondary btn-block" onClick={reset}>
+            <Button variant="outline" className="w-full" onClick={reset}>
               Verify Another Application
-            </button>
+            </Button>
           )}
 
           {status === 'eligible' && (
-            <div className="result-box success mt-lg">
-              <CheckCircle size={32} className="mb-sm" />
-              <div className="result-title">Eligible for Scholarship!</div>
-              <div className="result-desc mb-sm">Your ZK proof was verified on-chain. Your data remained private.</div>
+            <div className="mt-8 p-6 bg-green-500/10 border border-green-500/20 rounded-lg text-center">
+              <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-green-600 dark:text-green-400 mb-2">Eligible for Scholarship!</h3>
+              <p className="text-muted-foreground mb-4">Your ZK proof was verified on-chain. Your data remained private.</p>
               {txId && (
-                <a 
-                  href={`https://explorer.1am.xyz/tx/${txId}?network=preview`}
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="btn btn-secondary inline-flex items-center gap-xs mt-sm"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', fontSize: '0.9rem', padding: '0.5rem 1rem' }}
-                >
-                  View on Explorer <ExternalLink size={16} />
-                </a>
+                <Button variant="outline" asChild>
+                  <a href={`https://explorer.1am.xyz/tx/${txId}?network=preview`} target="_blank" rel="noopener noreferrer">
+                    View on Explorer <ExternalLink className="ml-2 h-4 w-4" />
+                  </a>
+                </Button>
               )}
             </div>
           )}
 
           {status === 'ineligible' && (
-            <div className="result-box error mt-lg">
-              <XCircle size={32} className="mb-sm" />
-              <div className="result-title">Not Eligible</div>
-              <div className="result-desc mb-sm">Your credentials do not satisfy the thresholds. Data remained private.</div>
+            <div className="mt-8 p-6 bg-destructive/10 border border-destructive/20 rounded-lg text-center">
+              <XCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-destructive mb-2">Not Eligible</h3>
+              <p className="text-muted-foreground mb-4">Your credentials do not satisfy the thresholds. Data remained private.</p>
               {txId && (
-                <a 
-                  href={`https://explorer.1am.xyz/tx/${txId}?network=preview`}
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="btn btn-secondary inline-flex items-center gap-xs mt-sm"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', fontSize: '0.9rem', padding: '0.5rem 1rem' }}
-                >
-                  View on Explorer <ExternalLink size={16} />
-                </a>
+                <Button variant="outline" asChild>
+                  <a href={`https://explorer.1am.xyz/tx/${txId}?network=preview`} target="_blank" rel="noopener noreferrer">
+                    View on Explorer <ExternalLink className="ml-2 h-4 w-4" />
+                  </a>
+                </Button>
               )}
             </div>
           )}
 
           {status === 'error' && errorMsg && (
-            <div className="result-box warning mt-lg">
-              <AlertCircle size={24} className="mb-sm" />
-              <div className="result-title">Verification Error</div>
-              <div className="result-desc">{errorMsg}</div>
+            <div className="mt-8 p-6 bg-destructive/10 border border-destructive/20 rounded-lg text-center">
+              <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-2" />
+              <h3 className="text-lg font-bold text-destructive mb-2">Verification Error</h3>
+              <p className="text-muted-foreground text-sm">{errorMsg}</p>
             </div>
           )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function LockCircleIcon() {
-  return (
-    <div className="mx-auto mb-md" style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--surface-light)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <AlertCircle size={32} className="text-secondary" />
+        </CardContent>
+      </Card>
     </div>
   );
 }

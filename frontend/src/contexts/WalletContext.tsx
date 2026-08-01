@@ -44,22 +44,24 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
   // Poll for wallet injection — runs once on mount
   useEffect(() => {
+    const autoConnect = localStorage.getItem('PROOF_SCHOLAR_AUTO_CONNECT');
     const startedAt = Date.now();
     const id = setInterval(() => {
       const w1am = (window as any).midnight?.['1am'];
       const wLace = (window as any).midnight?.mnLace;
-      if (w1am) {
-        setWalletType('1am');
+      
+      if (w1am || wLace) {
+        setWalletType(w1am ? '1am' : 'lace');
         setWalletStatus('detected');
         clearInterval(id);
+        
+        // Auto-connect if previously connected
+        if (autoConnect === 'true' && !connectingRef.current && !isConnected) {
+          connect('preview').catch(console.error);
+        }
         return;
       }
-      if (wLace) {
-        setWalletType('lace');
-        setWalletStatus('detected');
-        clearInterval(id);
-        return;
-      }
+      
       if (Date.now() - startedAt >= 6000) {
         setWalletStatus('not-found');
         clearInterval(id);
@@ -81,6 +83,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       setSession(sess);
       setAddress(sess.unshieldedAddress);
       setIsConnected(true);
+      localStorage.setItem('PROOF_SCHOLAR_AUTO_CONNECT', 'true');
       return sess;
     } finally {
       connectingRef.current = false;
@@ -94,6 +97,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     setSession(null);
     setWalletStatus('checking');
     setWalletType(null);
+    localStorage.removeItem('PROOF_SCHOLAR_AUTO_CONNECT');
     // Re-poll for wallet after disconnect
     const startedAt = Date.now();
     const id = setInterval(() => {
