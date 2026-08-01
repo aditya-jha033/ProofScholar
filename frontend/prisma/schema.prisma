@@ -1,0 +1,22 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ContractConfig {
+  id        String   @id @default(cuid())
+  network   String   @unique // e.g. "preview"
+  address   String   
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationCache {
+  walletAddress String   @id
+  status        String   // "eligible" | "ineligible"
+  txId          String?
+  timestamp     DateTime @default(now())
+}
